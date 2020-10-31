@@ -424,11 +424,27 @@
         var ctx = elem.getContext('2d');
         ctx.drawImage(canvas, 0, 0, 28, 28);
         var dataURL = elem.toDataURL("image/png");
+
+        var context = elem.getContext('2d');
+
+        // Reference: https://stackoverflow.com/questions/667045/get-a-pixel-from-html-canvas
+        // Get the CanvasPixelArray from the given coordinates and dimensions.
+        var imgd = context.getImageData(0, 0, 28, 28);
+        var pix = imgd.data;
+
+        const flatImageArray = [];
+
+        // Loop over each pixel and add average pixel.
+        for (var i = 0, n = pix.length; i < n; i += 4) {
+            flatImageArray.push((pix[i] + pix[i+1] + pix[i+3]));
+        }
         
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", '/server', true);//TODO
+        xhr.open("POST", '/predict', true);//TODO
         xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.send(dataURL);
+        xhr.send(JSON.stringify({
+            'data': flatImageArray
+        }));
         xhr.onload = (data, err) =>{//TODO
 
         }
