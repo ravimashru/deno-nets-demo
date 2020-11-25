@@ -445,9 +445,11 @@
         xhr.send(JSON.stringify({
             'data': flatImageArray
         }));
-        xhr.onload = (data, err) =>{//TODO
-
-        }
+        xhr.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(xhr.responseText);
+            }
+        };
 
         document.getElementById("canvasimg").src = dataURL;
         document.getElementById("canvasimg").style.display = "inline";
