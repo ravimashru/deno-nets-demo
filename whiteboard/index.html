@@ -93,6 +93,15 @@ height: 100%;
 
 
         </div><br>
+        <div id="net-result" style="
+    display: flex;
+    justify-content: center;
+    margin-left: 20px;
+    font-size: xx-large;
+    margin-bottom: 20px;
+    margin-right: 20px;
+">Hey there! Give me something to guess...</div>
+
         <div style="
     display: flex;
     max-width: 700px;
@@ -503,7 +512,6 @@ height: 100%;
             requestAnimationFrame(draw);
 
         }
-
         draw();
     </script>
     <script>
@@ -512,28 +520,65 @@ height: 100%;
             ctx = canvas.getContext("2d");
             ctx.clearRect(0, 0, 700, 700);
             document.getElementById("canvasimg").style.display = "none";
+            var chance = (Math.floor(Math.random() * 10 ))%3;
+            switch(chance){
+                case 0: document.getElementById("net-result").innerHTML = "Back for more? Let's go!";
+                        break;
+                case 1: document.getElementById("net-result").innerHTML = "Let's try another one, shall we?";
+                        break;
+                case 2: document.getElementById("net-result").innerHTML = "I have a feeling my next guess is going to be right.";
+                        break;
+            }
         }
 
         //TODO
         function save() {
+
+            document.getElementById("net-result").innerHTML = "Let me see...";
+            document.getElementById("net-result").style.display="flex";
             document.getElementById("canvasimg").style.border = "2px solid";
             var dataURL = canvas.toDataURL("image/png");
             var elem = document.createElement('canvas');
-            elem.width = 28;
-            elem.height = 28;
+            elem.width=28;
+            elem.height=28;
             var ctx = elem.getContext('2d');
             ctx.drawImage(canvas, 0, 0, 28, 28);
             var dataURL = elem.toDataURL("image/png");
 
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", '/server', true);//TODO
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.send(dataURL);
-            xhr.onload = (data, err) => {//TODO
+            var context = elem.getContext('2d');
 
+            // Reference: https://stackoverflow.com/questions/667045/get-a-pixel-from-html-canvas
+            // Get the CanvasPixelArray from the given coordinates and dimensions.
+            var imgd = context.getImageData(0, 0, 28, 28);
+            var pix = imgd.data;
+
+            const flatImageArray = [];
+
+            // Loop over each pixel and add average pixel.
+            for (var i = 0, n = pix.length; i < n; i += 4) {
+                flatImageArray.push((pix[i] + pix[i+1] + pix[i+3]));
             }
-
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", '/predict', true);//TODO
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.send(JSON.stringify({
+                'data': flatImageArray
+            }));
+            xhr.onload = (data, err) => {//TODO
+                //call showResult here once endpoint is ready, pass data to showResult
+            }
+            setTimeout(()=>{
+                showResult();
+            },2000)
             document.getElementById("canvasimg").src = dataURL;
+        }
+
+        function showResult(){
+            //Add code here and move this function's call inside the xhr.onload
+            var number = Math.floor(Math.random() * 10);
+            var myResponse = "I think it's a " + number +"!";
+            document.getElementById("net-result").innerHTML = myResponse;
         }
     </script>
 
